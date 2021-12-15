@@ -2,6 +2,7 @@
 
 import math
 import random
+import subprocess
 import sys
 import time
 
@@ -35,7 +36,7 @@ def main():
             # print(offset_dot_product_left, offset_dot_product_right, final)
 
     img.save("noise.png")
-    open("noise.png")
+    subprocess.run(["open", "noise.png"])
 
 def rand_float(start=0.0, end=1.0):
     """Return random float in range [start, end)."""
