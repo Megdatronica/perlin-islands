@@ -12,9 +12,9 @@ from PIL import Image
 # X_MAX = 3
 # Y_MAX = 3
 # PIXELS_PER_SQUARE = 5
-X_MAX = 8
-Y_MAX = 8
-PIXELS_PER_SQUARE = 8
+X_MAX = 20
+Y_MAX = 20
+PIXELS_PER_SQUARE = 10
 
 CANVAS_SIZE = ((X_MAX-1)*PIXELS_PER_SQUARE, (Y_MAX-1)*PIXELS_PER_SQUARE)
 BLACK = (0,0,0)
@@ -31,7 +31,7 @@ def main():
         gradient_vec = normalise((x, y))
         const_vectors[i, j] = gradient_vec
 
-    print(const_vectors)
+    # print(const_vectors)
 
     img = Image.new("RGB", CANVAS_SIZE)
 
@@ -50,14 +50,14 @@ def main():
             displacement_bottom_right = ((PIXELS_PER_SQUARE - a)/PIXELS_PER_SQUARE, (PIXELS_PER_SQUARE - b)/PIXELS_PER_SQUARE)
             offset_dot_product_bottom_right = dot(const_vectors[i+1, j+1], displacement_bottom_right)
 
-            interpleft = lerp(b/PIXELS_PER_SQUARE, offset_dot_product_top_left, offset_dot_product_bottom_left)
-            interpright = lerp(b/PIXELS_PER_SQUARE, offset_dot_product_top_right, offset_dot_product_bottom_right)
-            interp = lerp(a/PIXELS_PER_SQUARE, interpleft, interpright)
+            interpleft = fade_lerp(b/PIXELS_PER_SQUARE, offset_dot_product_top_left, offset_dot_product_bottom_left)
+            interpright = fade_lerp(b/PIXELS_PER_SQUARE, offset_dot_product_top_right, offset_dot_product_bottom_right)
+            interp = fade_lerp(a/PIXELS_PER_SQUARE, interpleft, interpright)
 
             x_val = PIXELS_PER_SQUARE*i + a
             y_val = PIXELS_PER_SQUARE*j + b
             color = 128 + round(interp * 256)
-            print(i, j, a, b, interp, color)
+            # print(i, j, a, b, interp, color)
 
             # if ((i, j, a, b) == (0, 1, 4, 2)):
             #     print("Top left:", const_vectors[i,j], displacement_top_left)
@@ -80,8 +80,15 @@ def rand_float(start=0.0, end=1.0):
     return start + (end - start)*random.random()
 
 def lerp(t, a1, a2):
-    """Get t of the way between a1 and a2 (0 <= t <= 1)."""
+    """Linear interpolation; get fraction t of the way between a1 and a2 (0 <= t <= 1)."""
     return a1 + t*(a2 - a1)
+
+def fade(t):
+    """Turn t into a smoother curve for linear interpolation."""
+    return 6*(t**5) - 15*(t**4) + 10*(t**3)
+
+def fade_lerp(t, a1, a2):
+    return lerp(fade(t), a1, a2)
 
 def normalise(vec):
     """Normalise the given vector so it has length 1."""
