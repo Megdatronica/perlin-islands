@@ -15,19 +15,28 @@ from PIL import Image
 X_MAX = 20
 Y_MAX = 20
 PIXELS_PER_SQUARE = 10
+
 BLACK = (0,0,0)
 
 def main():
     # random.seed(2)
-    CANVAS_SIZE = ((X_MAX-1)*PIXELS_PER_SQUARE, (Y_MAX-1)*PIXELS_PER_SQUARE)
-    noise = perlin_noise(X_MAX, Y_MAX, PIXELS_PER_SQUARE)
+    CANVAS_SIZE = (1000, 1000)
+
+    noise1 = perlin_noise(11, 11, 100)
+    noise2 = perlin_noise(41, 41, 25)
+    noise3 = perlin_noise(201, 201, 5)
 
     img = Image.new("RGB", CANVAS_SIZE)
     for i, j in itertools.product(range(CANVAS_SIZE[0]), range(CANVAS_SIZE[1])):
-        value = noise[i, j]
+        value1 = noise1[i, j] / 0.7
+        value2 = noise2[i, j] / 0.7
+        value3 = noise3[i, j] / 0.7
+        value = value1 + 0.1*value2 + 0.02*value3
+        # value = noise1[i, j] / 0.7
+
         # The values seem to range from -0.7 to +0.7 at the extremes, so normalise within this range
-        brightness = 128 + round((value / 0.7) * 128)
-        img.putpixel((i, j), (brightness, brightness, brightness))
+        brightness = 128 + round(value * 128)
+        img.putpixel((i, j), (brightness//3, brightness//3, brightness))
 
     img.save("noise.png")
     subprocess.run(["open", "noise.png"])
