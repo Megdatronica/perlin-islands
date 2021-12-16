@@ -3,6 +3,7 @@
 import itertools
 import math
 import random
+import statistics
 import subprocess
 import sys
 import time
@@ -19,31 +20,42 @@ PIXELS_PER_SQUARE = 10
 BLACK = (0,0,0)
 
 def main():
+    random.seed(time.time())
     # random.seed(2)
-    CANVAS_SIZE = (1000, 1000)
 
-    noise1 = perlin_noise(11, 11, 100)
-    noise2 = perlin_noise(41, 41, 25)
-    noise3 = perlin_noise(201, 201, 5)
+    px_max = 1000
+    py_max = 1000
 
-    img = Image.new("RGB", CANVAS_SIZE)
-    for i, j in itertools.product(range(CANVAS_SIZE[0]), range(CANVAS_SIZE[1])):
-        value1 = noise1[i, j] / 0.7
-        value2 = noise2[i, j] / 0.7
-        value3 = noise3[i, j] / 0.7
-        value = value1 + 0.1*value2 + 0.02*value3
-        # value = noise1[i, j] / 0.7
+    noise1 = perlin_noise(9, 9, 125)
+    noise2 = perlin_noise(21, 21, 50)
+    noise3 = perlin_noise(101, 101, 10)
 
-        # The values seem to range from -0.7 to +0.7 at the extremes, so normalise within this range
-        brightness = 128 + round(value * 128)
-        img.putpixel((i, j), (brightness//3, brightness//3, brightness))
+    img1 = image_from_noises([noise1], px_max, py_max)
+    img2 = image_from_noises([noise2], px_max, py_max)
+    img3 = image_from_noises([smooth(noise3, 5, px_max, py_max)], px_max, py_max)
 
+    # img1 = image_from_noises([noise3], px_max, py_max)
+    # img1.save("rough.png")
+    # img3 = image_from_noises([smooth(noise3, 5, px_max, py_max)], px_max, py_max)
+    # img3.save("smooth.png")
+
+    img = image_from_noises([noise1, noise2, noise3], px_max, py_max, amplitudes=[1.0, 0.5, 0.1])
     img.save("noise.png")
     subprocess.run(["open", "noise.png"])
 
-def perlin_noise(x_max, y_max, points_per_square):
-    random.seed(time.time())
+def image_from_noises(noises, px_max, py_max, amplitudes=[1.0]):
+    img = Image.new("RGB", (px_max, py_max))
+    for i, j in itertools.product(range(px_max), range(py_max)):
+        # The values seem to range from -0.7 to +0.7 at the extremes, so normalise within this range
+        value = 0
+        for noise, amplitude in zip(noises, amplitudes):
+            value += noise[i, j]*amplitude / 0.7
 
+        brightness = 128 + round(value * 128)
+        img.putpixel((i, j), (round(brightness/2), brightness//3, brightness))
+    return img
+
+def perlin_noise(x_max, y_max, points_per_square):
     const_vectors = {}
     for i, j in itertools.product(range(x_max), range(y_max)):
         x = rand_float(-1.0, 1.0)
@@ -78,6 +90,29 @@ def perlin_noise(x_max, y_max, points_per_square):
             result[x_val, y_val] = interp
 
     return result
+
+def smooth(noise, d, px_max, py_max):
+    """Smooth the noise out by setting each point to the average of all points within d."""
+    smoothed = {}
+    for key in noise.keys():
+        i, j = key
+        points_to_avg = points_within((i, j), d, px_max, py_max)
+        smoothed[key] = statistics.mean([noise[p] for p in points_to_avg])
+    return smoothed
+
+def points_within(p, d, px_max, py_max):
+    """Return all valid points with distance dof p."""
+    x_range = range(max(0, p[0] - d), min(p[0] + d + 1, px_max))
+    y_range = range(max(0, p[1] - d), min(p[1] + d + 1, py_max))
+
+    points = []
+    for point in itertools.product(x_range, y_range):
+        if dist(p, point) <= d:
+            points.append(point)
+    return points
+
+def dist(a, b):
+    return math.sqrt( (a[0] - b[0])**2 + (a[1] - b[1])**2 )
 
 def rand_float(start=0.0, end=1.0):
     """Return random float in range [start, end)."""
