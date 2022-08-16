@@ -62,13 +62,15 @@ def noisy_image(width, height, octaves):
     # result = {}
     # for i, j in itertools.product(range(width), range(height)):
     #     result[i,j] = 127
-    result = np.full((width, height), 127)
+    result = np.full((width, height), 127.0)
     for freq, amplitude in octaves:
         points_per_square = width // (freq - 1)
         noise = perlin_noise(freq, freq, points_per_square)
         for i, j in itertools.product(range(width), range(height)):
             # The values seem to range from -0.7 to +0.7 at the extremes, so normalise in this range
-            result[i,j] += noise[i,j]*amplitude*127 / 0.7
+            # result[i,j] += noise[i,j]*amplitude*127 / 0.7
+            result[i, j] += noise[i,j]*amplitude
+    result = (255*(result - np.min(result))/np.ptp(result))
     return result
 
 def image_from_noises(noises, px_max, py_max, amplitudes=[1.0]):
