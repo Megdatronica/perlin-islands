@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+https://medium.com/@yvanscher/playing-with-perlin-noise-generating-realistic-archipelagos-b59f004d8401
+"""
 
 import itertools
 import random
@@ -13,17 +16,18 @@ import noise_2d
 levels = {
     (0, 100): (30, 70, 220),      # Deep Blue sea
     (100, 127): (30, 150, 180),   # Shallow sea
-    (127, 160): (239, 221, 111),  # Golden sand
-    (160, 190): (52, 140, 49),    # Green grass
-    (190, 220): (145, 142, 133),  # Grey stone mountain
-    (220, 256): (255, 255, 255),  # White snow
+    (127, 140): (239, 221, 111),  # Golden sand
+    (140, 160): (52, 140, 49),    # Green grass
+    (160, 200): (38, 106, 46),     # Dark Green jungle
+    (200, 225): (145, 142, 133),  # Grey stone mountain
+    (225, 256): (255, 255, 255),  # White snow
 }
 
 def main():
     # random.seed(0)
     random.seed(time.time())
-    height = 600
     width = 600
+    height = 600
     # noise = noise_2d.noisy_image(width, height, [(5, 1.0), (10, 0.2), (20, 0.05)])
     noise = noise_2d.noisy_image(width, height, [(10, 1.0), (20, 0.02), (40, 0.05)])
 
