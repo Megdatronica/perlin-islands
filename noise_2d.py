@@ -8,6 +8,7 @@ import subprocess
 import sys
 import time
 
+import numpy as np
 from PIL import Image
 
 # X_MAX = 3
@@ -44,6 +45,32 @@ def main():
     img.save("noise.png")
     subprocess.run(["open", "noise.png"])
 
+def noisy_image(width, height, octaves):
+    """Generate a full 2d array of perlin noise.
+
+    Args:
+        - width: Width of image to generate
+        - height: Height of image to generate
+        - octaves: Array of (scale, amplitude) tuples, where:
+            - scale is the number of noise squares per image
+              (smaller = larger noise that varies more gradually)
+            - amplitude is the size (between 0.0 and 1.0) of the peaks/troughs of the noise
+
+    The noise takes values between 0 and 255, 127 being the average.
+
+    """
+    # result = {}
+    # for i, j in itertools.product(range(width), range(height)):
+    #     result[i,j] = 127
+    result = np.full((width, height), 127)
+    for freq, amplitude in octaves:
+        points_per_square = width // (freq - 1)
+        noise = perlin_noise(freq, freq, points_per_square)
+        for i, j in itertools.product(range(width), range(height)):
+            # The values seem to range from -0.7 to +0.7 at the extremes, so normalise in this range
+            result[i,j] += noise[i,j]*amplitude*127 / 0.7
+    return result
+
 def image_from_noises(noises, px_max, py_max, amplitudes=[1.0]):
     img = Image.new("RGB", (px_max, py_max))
     for i, j in itertools.product(range(px_max), range(py_max)):
@@ -58,7 +85,7 @@ def image_from_noises(noises, px_max, py_max, amplitudes=[1.0]):
 
 def perlin_noise(x_max, y_max, points_per_square):
     const_vectors = {}
-    for i, j in itertools.product(range(x_max), range(y_max)):
+    for i, j in itertools.product(range(x_max+1), range(y_max+1)):
         x = rand_float(-1.0, 1.0)
         y = rand_float(-1.0, 1.0)
         gradient_vec = normalise((x, y))
@@ -67,7 +94,7 @@ def perlin_noise(x_max, y_max, points_per_square):
     # print(const_vectors)
 
     result = {}
-    for i, j in itertools.product(range(x_max - 1), range(y_max - 1)):
+    for i, j in itertools.product(range(x_max), range(y_max)):
         # print("square {}".format(i))
         for a, b in itertools.product(range(points_per_square), range(points_per_square)):
             displacement_top_left = (-a/points_per_square, -b/points_per_square)
