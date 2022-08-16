@@ -6,6 +6,7 @@ https://medium.com/@yvanscher/playing-with-perlin-noise-generating-realistic-arc
 import itertools
 import random
 import subprocess
+import sys
 import time
 
 import numpy as np
@@ -23,28 +24,39 @@ levels = {
     (225, 256): (255, 255, 255),  # White snow
 }
 
+WIDTH = 1200
+HEIGHT = 600
+SUPPRESSION_AMPLITUDE = 150
+
 def main():
-    # random.seed(0)
-    random.seed(time.time())
-    width = 600
-    height = 600
-    # noise = noise_2d.noisy_image(width, height, [(5, 1.0), (10, 0.2), (20, 0.05)])
-    noise = noise_2d.noisy_image(width, height, [(10, 1.0), (20, 0.02), (40, 0.05)])
+    if len(sys.argv) >= 2:
+        seed = sys.argv[1]
+    else:
+        seed = round(time.time())
+    print("Seed: {}".format(seed))
+    random.seed(seed)
 
-    # shape = numpy.full((width, height), 127)
+    # noise = noise_2d.noisy_image(WIDTH, HEIGHT, [(5, 1.0), (10, 0.2), (20, 0.05)])
+    # noise = noise_2d.noisy_image(WIDTH, HEIGHT, [(10, 1.0), (20, 0.02), (40, 0.05)])
+    # noise = noise_2d.noisy_image(WIDTH, HEIGHT, [(60, 1.0), (30, 0.02), (15, 0.05)])
 
-    midpoint = (height//2, width//2)
-    img = Image.new("RGB", (height, width))
-    for i, j in itertools.product(range(width), range(height)):
+    octaves = [
+        (HEIGHT//10, 1.0),
+        (HEIGHT//20, 0.2),
+        (HEIGHT//40, 0.5),
+    ]
+    noise = noise_2d.noisy_image(WIDTH, HEIGHT, octaves)
+
+    # shape = numpy.full((WIDTH, HEIGHT), 127)
+
+    midpoint = (WIDTH//2, HEIGHT//2)
+    img = Image.new("RGB", (WIDTH, HEIGHT))
+    for i, j in itertools.product(range(WIDTH), range(HEIGHT)):
         val = noise[i, j]
 
         dist = noise_2d.dist((i, j), midpoint)
-        # dist_fraction = 1 - max(dist / (height//2), 1.0)
-        # print(i, j, dist_fraction)
-        # val -= dist_fraction * 127
-        dist_fraction = min(dist / (height/1.5), 1)
-        # val = max(0, val - dist_fraction*127)
-        p = noise_2d.fade_lerp(dist_fraction, 0, 150)
+        dist_fraction = min(dist / (HEIGHT // 2), 1)
+        p = noise_2d.fade_lerp(dist_fraction, 0, SUPPRESSION_AMPLITUDE)
         val = max(0, val - p)
 
         for level, colour in levels.items():

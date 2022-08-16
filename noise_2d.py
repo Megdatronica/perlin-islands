@@ -52,8 +52,7 @@ def noisy_image(width, height, octaves):
         - width: Width of image to generate
         - height: Height of image to generate
         - octaves: Array of (scale, amplitude) tuples, where:
-            - scale is the number of noise squares per image
-              (smaller = larger noise that varies more gradually)
+            - scale is the size of each noise square
             - amplitude is the size (between 0.0 and 1.0) of the peaks/troughs of the noise
 
     The noise takes values between 0 and 255, 127 being the average.
@@ -63,9 +62,9 @@ def noisy_image(width, height, octaves):
     # for i, j in itertools.product(range(width), range(height)):
     #     result[i,j] = 127
     result = np.full((width, height), 127.0)
-    for freq, amplitude in octaves:
-        points_per_square = width // (freq - 1)
-        noise = perlin_noise(freq, freq, points_per_square)
+    for scale, amplitude in octaves:
+        # points_per_square = width // (scale - 1)
+        noise = perlin_noise(scale, width, height)
         for i, j in itertools.product(range(width), range(height)):
             # The values seem to range from -0.7 to +0.7 at the extremes, so normalise in this range
             # result[i,j] += noise[i,j]*amplitude*127 / 0.7
@@ -85,7 +84,16 @@ def image_from_noises(noises, px_max, py_max, amplitudes=[1.0]):
         img.putpixel((i, j), (round(brightness/2), brightness//3, brightness))
     return img
 
-def perlin_noise(x_max, y_max, points_per_square):
+def perlin_noise(scale, px_max, py_max):
+    """Perlin noise.
+
+    x_scale and y_scale are the size of the squares used for the base of the noise.
+    px_max and py_max are the size of the image we are trying to cover.
+
+    """
+    x_max = math.ceil(px_max / scale)
+    y_max = math.ceil(py_max / scale)
+
     const_vectors = {}
     for i, j in itertools.product(range(x_max+1), range(y_max+1)):
         x = rand_float(-1.0, 1.0)
@@ -98,25 +106,25 @@ def perlin_noise(x_max, y_max, points_per_square):
     result = {}
     for i, j in itertools.product(range(x_max), range(y_max)):
         # print("square {}".format(i))
-        for a, b in itertools.product(range(points_per_square), range(points_per_square)):
-            displacement_top_left = (-a/points_per_square, -b/points_per_square)
+        for a, b in itertools.product(range(scale), range(scale)):
+            displacement_top_left = (-a/scale, -b/scale)
             offset_dot_product_top_left = dot(const_vectors[i, j], displacement_top_left)
 
-            displacement_top_right = ((points_per_square - a)/points_per_square, -b/points_per_square)
+            displacement_top_right = ((scale - a)/scale, -b/scale)
             offset_dot_product_top_right = dot(const_vectors[i+1, j], displacement_top_right)
 
-            displacement_bottom_left = (-a/points_per_square, (points_per_square - b)/points_per_square)
+            displacement_bottom_left = (-a/scale, (scale - b)/scale)
             offset_dot_product_bottom_left = dot(const_vectors[i, j+1], displacement_bottom_left)
 
-            displacement_bottom_right = ((points_per_square - a)/points_per_square, (points_per_square - b)/points_per_square)
+            displacement_bottom_right = ((scale - a)/scale, (scale - b)/scale)
             offset_dot_product_bottom_right = dot(const_vectors[i+1, j+1], displacement_bottom_right)
 
-            interpleft = fade_lerp(b/points_per_square, offset_dot_product_top_left, offset_dot_product_bottom_left)
-            interpright = fade_lerp(b/points_per_square, offset_dot_product_top_right, offset_dot_product_bottom_right)
-            interp = fade_lerp(a/points_per_square, interpleft, interpright)
+            interpleft = fade_lerp(b/scale, offset_dot_product_top_left, offset_dot_product_bottom_left)
+            interpright = fade_lerp(b/scale, offset_dot_product_top_right, offset_dot_product_bottom_right)
+            interp = fade_lerp(a/scale, interpleft, interpright)
 
-            x_val = points_per_square*i + a
-            y_val = points_per_square*j + b
+            x_val = scale*i + a
+            y_val = scale*j + b
             result[x_val, y_val] = interp
 
     return result
