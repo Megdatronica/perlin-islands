@@ -20,8 +20,8 @@ PIXELS_PER_SQUARE = 10
 BLACK = (0,0,0)
 
 def main():
-    random.seed(time.time())
-    # random.seed(2)
+    # random.seed(time.time())
+    random.seed(2)
 
     px_max = 1000
     py_max = 1000
@@ -32,14 +32,15 @@ def main():
 
     img1 = image_from_noises([noise1], px_max, py_max)
     img2 = image_from_noises([noise2], px_max, py_max)
-    img3 = image_from_noises([smooth(noise3, 5, px_max, py_max)], px_max, py_max)
+    # img3 = image_from_noises([smooth(noise3, 2, px_max, py_max)], px_max, py_max)
+    img3 = image_from_noises([noise3], px_max, py_max)
 
     # img1 = image_from_noises([noise3], px_max, py_max)
     # img1.save("rough.png")
     # img3 = image_from_noises([smooth(noise3, 5, px_max, py_max)], px_max, py_max)
     # img3.save("smooth.png")
 
-    img = image_from_noises([noise1, noise2, noise3], px_max, py_max, amplitudes=[1.0, 0.5, 0.1])
+    img = image_from_noises([noise1, noise2, noise3], px_max, py_max, amplitudes=[1.0, 0.3, 0.05])
     img.save("noise.png")
     subprocess.run(["open", "noise.png"])
 
