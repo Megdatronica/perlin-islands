@@ -28,6 +28,7 @@ levels = {
 WIDTH = 1000
 HEIGHT = 500
 SUPPRESSION_AMPLITUDE = 500
+BORDER_START = 100
 
 def main():
     if len(sys.argv) >= 2:
@@ -63,6 +64,13 @@ def main():
         dist_fraction = min(dist / (HEIGHT // 2), 1)
         p = noise_2d.fade_lerp(dist_fraction, 0, SUPPRESSION_AMPLITUDE)
         val = max(0, val - p)
+
+        horizontal_edge_dist = min(abs(i - WIDTH), abs(i))
+        vertical_edge_dist = min(abs(j - HEIGHT), abs(j))
+        edge_dist = min(horizontal_edge_dist, vertical_edge_dist)
+        t = min(1.0, 1.0 - edge_dist/BORDER_START)
+        p = min(1.0, noise_2d.lerp(t, 1.0, 0.0))
+        val = val * p
 
         for level, colour in levels.items():
             if val >= level[0] and val <= level[1]:

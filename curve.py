@@ -41,7 +41,7 @@ def generate_curve(width, height):
     y_offset = random.randint(height//4, round(3*height/4))
     # x_offset = random.randint(width//4, round(3*width/4))
     x_offset = 0
-    print("{}*(x + {}) + {}".format(coefficient, x_offset, y_offset))
+    # print("{}*(x + {}) + {}".format(coefficient, x_offset, y_offset))
 
     def fun(coefficient, x_offset, y_offset, x):
         return coefficient*(x_offset + x)*(x_offset + x) + y_offset
