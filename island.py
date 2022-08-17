@@ -20,16 +20,16 @@ HEIGHT = 1080
 SUPPRESSION_AMPLITUDE = 250
 BORDER_START = 100
 
-SL = 127  # Sea Level
+SL = 180  # Sea Level
 
 levels = {
-    (0, SL*0.75): (30, 70, 220),      # Deep Blue sea
-    (SL*0.75, SL): (30, 150, 180),   # Shallow sea
-    (SL, SL*1.1): (239, 221, 111),  # Golden sand
-    (SL*1.1, SL*1.26): (52, 140, 49),    # Green grass
-    (SL*1.26, SL*1.57): (38, 106, 46),     # Dark Green jungle
-    (SL*1.57, SL*1.77): (145, 142, 133),  # Grey stone mountain
-    (SL*1.77, 256): (255, 255, 255),  # White snow
+    (0, SL*0.90): (30, 70, 220),      # Deep Blue sea
+    (SL*0.90, SL): (30, 150, 180),   # Shallow sea
+    (SL, SL+(256-SL)*0.1): (239, 221, 111),  # Golden sand
+    (SL+(256-SL)*0.1, SL+(256-SL)*0.26): (52, 140, 49),    # Green grass
+    (SL+(256-SL)*0.26, SL+(256-SL)*0.57): (38, 106, 46),     # Dark Green jungle
+    (SL+(256-SL)*0.57, SL+(256-SL)*0.77): (145, 142, 133),  # Grey stone mountain
+    (SL+(256-SL)*0.77, 256): (255, 255, 255),  # White snow
 }
 
 def main():
@@ -55,11 +55,12 @@ def main():
 
     # midpoint = (WIDTH//2, HEIGHT//2)
     curve = generate_curve(WIDTH, HEIGHT)
-    draw_curve = True
+    draw_curve = False
 
     img = Image.new("RGB", (WIDTH, HEIGHT))
     for i, j in itertools.product(range(WIDTH), range(HEIGHT)):
         # img.putpixel((i, j), (int(noise[i, j]), int(noise[i, j]), int(noise[i, j])))
+        # continue
         val = noise[i, j]
 
         # dist = abs(j - HEIGHT//2)
@@ -81,6 +82,12 @@ def main():
         val = val * p
 
         for level, colour in levels.items():
+            if val <= SL:
+                t = val/SL
+                g_value = int(round(noise_2d.fade_lerp(t, 70, 150)))
+                b_value = int(round(noise_2d.fade_lerp(t, 220, 180)))
+                img.putpixel((i, j), (30, g_value, b_value))
+                break
             if val >= level[0] and val <= level[1]:
                 img.putpixel((i, j), colour)
                 break
