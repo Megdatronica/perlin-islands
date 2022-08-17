@@ -15,20 +15,22 @@ from PIL import Image
 import noise_2d
 from curve import generate_curve
 
-levels = {
-    (0, 100): (30, 70, 220),      # Deep Blue sea
-    (100, 127): (30, 150, 180),   # Shallow sea
-    (127, 140): (239, 221, 111),  # Golden sand
-    (140, 160): (52, 140, 49),    # Green grass
-    (160, 200): (38, 106, 46),     # Dark Green jungle
-    (200, 225): (145, 142, 133),  # Grey stone mountain
-    (225, 256): (255, 255, 255),  # White snow
-}
-
 WIDTH = 1920
 HEIGHT = 1080
-SUPPRESSION_AMPLITUDE = 500
+SUPPRESSION_AMPLITUDE = 250
 BORDER_START = 100
+
+SL = 127  # Sea Level
+
+levels = {
+    (0, SL*0.75): (30, 70, 220),      # Deep Blue sea
+    (SL*0.75, SL): (30, 150, 180),   # Shallow sea
+    (SL, SL*1.1): (239, 221, 111),  # Golden sand
+    (SL*1.1, SL*1.26): (52, 140, 49),    # Green grass
+    (SL*1.26, SL*1.57): (38, 106, 46),     # Dark Green jungle
+    (SL*1.57, SL*1.77): (145, 142, 133),  # Grey stone mountain
+    (SL*1.77, 256): (255, 255, 255),  # White snow
+}
 
 def main():
     if len(sys.argv) >= 2:
@@ -36,7 +38,7 @@ def main():
     else:
         seed = round(time.time())
     print("Seed: {}".format(seed))
-    random.seed(seed)
+    random.seed(int(seed))
 
     # noise = noise_2d.noisy_image(WIDTH, HEIGHT, [(5, 1.0), (10, 0.2), (20, 0.05)])
     # noise = noise_2d.noisy_image(WIDTH, HEIGHT, [(10, 1.0), (20, 0.02), (40, 0.05)])
@@ -53,7 +55,7 @@ def main():
 
     # midpoint = (WIDTH//2, HEIGHT//2)
     curve = generate_curve(WIDTH, HEIGHT)
-    draw_curve = False
+    draw_curve = True
 
     img = Image.new("RGB", (WIDTH, HEIGHT))
     for i, j in itertools.product(range(WIDTH), range(HEIGHT)):
