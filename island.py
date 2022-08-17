@@ -13,6 +13,7 @@ import numpy as np
 from PIL import Image
 
 import noise_2d
+from curve import generate_curve
 
 levels = {
     (0, 100): (30, 70, 220),      # Deep Blue sea
@@ -24,9 +25,9 @@ levels = {
     (225, 256): (255, 255, 255),  # White snow
 }
 
-WIDTH = 1200
-HEIGHT = 600
-SUPPRESSION_AMPLITUDE = 150
+WIDTH = 1000
+HEIGHT = 500
+SUPPRESSION_AMPLITUDE = 500
 
 def main():
     if len(sys.argv) >= 2:
@@ -41,20 +42,24 @@ def main():
     # noise = noise_2d.noisy_image(WIDTH, HEIGHT, [(60, 1.0), (30, 0.02), (15, 0.05)])
 
     octaves = [
-        (HEIGHT//10, 1.0),
-        (HEIGHT//20, 0.2),
-        (HEIGHT//40, 0.5),
+        (HEIGHT//5, 1.0),
+        (HEIGHT//10, 0.2),
+        (HEIGHT//20, 0.5),
     ]
     noise = noise_2d.noisy_image(WIDTH, HEIGHT, octaves)
 
     # shape = numpy.full((WIDTH, HEIGHT), 127)
 
-    midpoint = (WIDTH//2, HEIGHT//2)
+    # midpoint = (WIDTH//2, HEIGHT//2)
+    curve = generate_curve(WIDTH, HEIGHT)
     img = Image.new("RGB", (WIDTH, HEIGHT))
     for i, j in itertools.product(range(WIDTH), range(HEIGHT)):
+        # img.putpixel((i, j), (int(noise[i, j]), int(noise[i, j]), int(noise[i, j])))
         val = noise[i, j]
 
-        dist = noise_2d.dist((i, j), midpoint)
+        # dist = abs(j - HEIGHT//2)
+        curve_val = curve(i)
+        dist = abs(j - curve_val)
         dist_fraction = min(dist / (HEIGHT // 2), 1)
         p = noise_2d.fade_lerp(dist_fraction, 0, SUPPRESSION_AMPLITUDE)
         val = max(0, val - p)
