@@ -25,8 +25,8 @@ levels = {
     (225, 256): (255, 255, 255),  # White snow
 }
 
-WIDTH = 1000
-HEIGHT = 500
+WIDTH = 1920
+HEIGHT = 1080
 SUPPRESSION_AMPLITUDE = 500
 BORDER_START = 100
 
@@ -53,6 +53,8 @@ def main():
 
     # midpoint = (WIDTH//2, HEIGHT//2)
     curve = generate_curve(WIDTH, HEIGHT)
+    draw_curve = False
+
     img = Image.new("RGB", (WIDTH, HEIGHT))
     for i, j in itertools.product(range(WIDTH), range(HEIGHT)):
         # img.putpixel((i, j), (int(noise[i, j]), int(noise[i, j]), int(noise[i, j])))
@@ -64,6 +66,10 @@ def main():
         dist_fraction = min(dist / (HEIGHT // 2), 1)
         p = noise_2d.fade_lerp(dist_fraction, 0, SUPPRESSION_AMPLITUDE)
         val = max(0, val - p)
+
+        if j == int(curve_val) and draw_curve:
+            img.putpixel((i, j), (255, 0, 0))
+            continue
 
         horizontal_edge_dist = min(abs(i - WIDTH), abs(i))
         vertical_edge_dist = min(abs(j - HEIGHT), abs(j))

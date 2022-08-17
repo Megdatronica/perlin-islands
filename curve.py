@@ -50,9 +50,9 @@ def generate_curve(width, height):
         x_offset -= 1
 
     # Put the function roughly in the centre of the image in terms of its height
-    output_values = [fun(coefficient, x_offset, y_offset, x) for x in range(WIDTH)]
+    output_values = [fun(coefficient, x_offset, y_offset, x) for x in range(width)]
     output_range = max(output_values) - min(output_values)
-    height_adjustment = (HEIGHT//2 - output_range//2) - min(output_values)
+    height_adjustment = (height//2 - output_range//2) - min(output_values)
     y_offset += height_adjustment
 
     return partial(fun, coefficient, x_offset, y_offset)
