@@ -164,8 +164,15 @@ def fade(t):
     """Turn t into a smoother curve for linear interpolation."""
     return 6*(t**5) - 15*(t**4) + 10*(t**3)
 
-def fade_lerp(t, a1, a2):
-    return lerp(fade(t), a1, a2)
+def fade_lerp(t, a1, a2, skew=1.0):
+    """Linear interpolation, but smoother.
+
+    The skew applies an exponent to t:
+    - For values above 1.0, the function increases more slowly at the start, faster at the end.
+    - For fractions below 1.0, the function increases faster at the start, more slowly at the end.
+
+    """
+    return lerp(fade(t**skew), a1, a2)
 
 def normalise(vec):
     """Normalise the given vector so it has length 1."""

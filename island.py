@@ -20,7 +20,7 @@ HEIGHT = 1080
 SUPPRESSION_AMPLITUDE = 250
 BORDER_START = 100
 
-SL = 180  # Sea Level
+SL = 160  # Sea Level
 
 levels = {
     (0, SL*0.90): (30, 70, 220),      # Deep Blue sea
@@ -46,8 +46,9 @@ def main():
 
     octaves = [
         (HEIGHT//5, 1.0),
-        (HEIGHT//10, 0.2),
-        (HEIGHT//20, 0.5),
+        (HEIGHT//10, 0.5),
+        (HEIGHT//20, 0.25),
+        (HEIGHT//40, 0.05),
     ]
     noise = noise_2d.noisy_image(WIDTH, HEIGHT, octaves)
 
@@ -58,9 +59,9 @@ def main():
     draw_curve = False
 
     img = Image.new("RGB", (WIDTH, HEIGHT))
+    raw_noise = Image.new("RGB", (WIDTH, HEIGHT))
     for i, j in itertools.product(range(WIDTH), range(HEIGHT)):
-        # img.putpixel((i, j), (int(noise[i, j]), int(noise[i, j]), int(noise[i, j])))
-        # continue
+        raw_noise.putpixel((i, j), (int(noise[i, j]), int(noise[i, j]), int(noise[i, j])))
         val = noise[i, j]
 
         # dist = abs(j - HEIGHT//2)
@@ -84,8 +85,8 @@ def main():
         for level, colour in levels.items():
             if val <= SL:
                 t = val/SL
-                g_value = int(round(noise_2d.fade_lerp(t, 70, 150)))
-                b_value = int(round(noise_2d.fade_lerp(t, 220, 180)))
+                g_value = int(round(noise_2d.fade_lerp(t, 70, 150, skew=4.5)))
+                b_value = int(round(noise_2d.fade_lerp(t, 220, 180, skew=4.5)))
                 img.putpixel((i, j), (30, g_value, b_value))
                 break
             if val >= level[0] and val <= level[1]:
@@ -94,6 +95,7 @@ def main():
         else:
             img.putpixel((i, j), (0, 0, 0))
     img.save("island.png")
+    raw_noise.save("raw_noise.png")
     subprocess.run(["open", "island.png"])
 
 if __name__ == "__main__":
