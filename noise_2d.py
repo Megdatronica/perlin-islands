@@ -85,7 +85,7 @@ def image_from_noises(noises, px_max, py_max, amplitudes=[1.0]):
     return img
 
 def perlin_noise(scale, px_max, py_max):
-    """Perlin noise.
+    """2D Perlin noise.
 
     x_scale and y_scale are the size of the squares used for the base of the noise.
     px_max and py_max are the size of the image we are trying to cover.
